@@ -1,5 +1,6 @@
 package com.conguyetduong.securitynote.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Data

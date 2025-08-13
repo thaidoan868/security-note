@@ -21,7 +21,7 @@ public class Note {
 
     // Optional fields
     @Column(nullable = false)
-    @NotBlank
+    @NotBlank(message = "Title must not be blank")
     @Size(max = 255, message = "Title must be at most 255 characters.")
     @Builder.Default
     private String title = "Title";

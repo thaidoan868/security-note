@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.conguyetduong.securitynote.dto.NoteDto;
 import com.conguyetduong.securitynote.service.NoteService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
