@@ -5,7 +5,10 @@ import org.mapstruct.*;
 import com.conguyetduong.securitynote.dto.NoteDto;
 import com.conguyetduong.securitynote.model.Note;
 
-@Mapper(componentModel = "spring")
+@Mapper(
+		componentModel = "spring",
+	    unmappedTargetPolicy = ReportingPolicy.ERROR
+)
 public interface NoteMapper {
 	NoteDto toDto(Note note);
 	

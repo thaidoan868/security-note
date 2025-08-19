@@ -8,8 +8,6 @@ import lombok.*;
 @Table(name = "note")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
 public class Note {
 
     // Can't be set by the builder
@@ -23,8 +21,7 @@ public class Note {
     @Column(nullable = false)
     @NotBlank(message = "Title must not be blank")
     @Size(max = 255, message = "Title must be at most 255 characters.")
-    @Builder.Default
-    private String title = "Title";
+    private String title;
 
     @Size(max = 5000, message = "Content must be at most 5000 characters.")
     private String content;
@@ -34,4 +31,11 @@ public class Note {
     @NotBlank(message = "Owner must not contain whitespace")
     @Size(min = 3, max = 50, message = "Owner must be 3-50 characters.")
     private String owner;
+    
+    @Builder
+    public Note(String title, String content, String owner) {
+    	this.title = (title == null || title.isBlank()) ? "Title" : title;
+    	this.content = content;
+    	this.owner = owner;
+    }
 }
