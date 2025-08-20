@@ -12,7 +12,7 @@ import java.util.*;
 @RestControllerAdvice
 public class ValidationExceptionHandler {
 	
-    // The exception that throws when create entities with invalid fields
+//     The exception that throws by the @Valid annotation
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -21,7 +21,7 @@ public class ValidationExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
     
-    // The exception that throws when update entities with invalid fields
+    // The exception that throws when update or create entities with invalid fields
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, String>> handleConstraintViolation(ConstraintViolationException ex) {
         Map<String, String> errors = new HashMap<>();
