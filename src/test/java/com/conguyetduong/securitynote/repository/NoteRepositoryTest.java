@@ -45,7 +45,7 @@ class NoteRepositoryTest {
 
 	}
 	@Test
-	@DisplayName("save(): Should throw ConstraintViolation Eception when saving an invalid note")
+	@DisplayName("save(): Should throw ConstraintViolation Exception when saving an invalid note")
 	void save_shouldThrowExceptionWhenNoteIsValid() {
 		Note invalidNote = new Note(title, content, null);
 		

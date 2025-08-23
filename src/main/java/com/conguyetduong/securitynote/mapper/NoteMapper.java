@@ -12,6 +12,7 @@ import com.conguyetduong.securitynote.model.Note;
 public interface NoteMapper {
 	NoteDto toDto(Note note);
 	
+	//@Mapping(target = "content", ignore = true)
 	Note toEntity(NoteDto noteDto);
 	
 	@BeanMapping(nullValuePropertyMappingStrategy  = NullValuePropertyMappingStrategy.IGNORE)

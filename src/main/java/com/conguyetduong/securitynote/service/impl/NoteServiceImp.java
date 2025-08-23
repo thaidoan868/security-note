@@ -19,17 +19,10 @@ public class NoteServiceImp implements NoteService {
 	private final NoteRepository noteRepository;
 	private final NoteMapper noteMapper;
 	
-/*
-	public NoteServiceImp(NoteRepository noteRepository, NoteMapper noteMapper) {
-		super();
-		this.noteRepository = noteRepository;
-		this.noteMapper = noteMapper;
-	} */
-
 	@Override
 	public NoteDto create(NoteDto noteDto) {
-		Note entity = noteMapper.toEntity(noteDto);
-		return noteMapper.toDto(noteRepository.save(entity));
+		Note note = noteMapper.toEntity(noteDto);
+		return noteMapper.toDto(noteRepository.save(note));
 	}
 
 	@Override
