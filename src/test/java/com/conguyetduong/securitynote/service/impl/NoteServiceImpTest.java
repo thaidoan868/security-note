@@ -32,10 +32,6 @@ class NoteServiceImpTest {
 	private String owner = "thaidoan";
 
 	// ---------- tests ----------
-	@AfterEach
-	void tearDown() {
-		System.out.println("++++++++++++++++ DELTED" + noteRepo.findAll() );
-	}
 
 	@Test
 	void create_persistsNote_whenValid() {

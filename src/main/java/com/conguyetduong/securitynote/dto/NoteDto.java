@@ -1,5 +1,7 @@
 package com.conguyetduong.securitynote.dto;
 
+import com.conguyetduong.securitynote.model.User;
+
 import lombok.*;
 
 @Data
@@ -10,5 +12,5 @@ public class NoteDto {
 	private Long id;
 	private String title;
 	private String content;
-	private String owner;
+	private User owner;
 }
