@@ -2,54 +2,64 @@ package com.conguyetduong.securitynote.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.conguyetduong.securitynote.security.service.UserDetailsServiceImpl;
+
+import lombok.RequiredArgsConstructor;
+
 @Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable());
+	private final UserDetailsServiceImpl userDetailsService;
 
-        // Authorization rules: open health, protect everything under /api/**
-        http.authorizeHttpRequests(auth -> auth
-            .requestMatchers("/health", "/actuator/health").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/notes/**").hasAnyRole("USER", "ADMIN")
-            .requestMatchers("/api/**").hasRole("ADMIN")
-            .anyRequest().authenticated()
-        );
+	@Bean
+	PasswordEncoder passwordEncoder() {
+		// return new BCryptPasswordEncoder(); // store BCrypt hashes in DB
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
-        // Use HTTP Basic as the authentication method
-        http.httpBasic(Customizer.withDefaults());
+	}
 
-        return http.build();
-    }
+	@Bean
+	AuthenticationProvider authenticationProvider() {
+		DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+		provider.setPasswordEncoder(passwordEncoder()); // still set encoder explicitly
+		return provider;
+	}
 
-    @Bean
-    InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder encoder) {
-        UserDetails user = User.withUsername("user")
-            .password(encoder.encode("userpass"))
-            .roles("USER")
-            .build();
+	@Bean
+	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http
+				// Stateless API with HTTP Basic
+				.csrf(csrf -> csrf.disable()) // disable CSRF for APIs using Basic
+				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-        UserDetails admin = User.withUsername("admin")
-            .password(encoder.encode("adminpass"))
-            .roles("ADMIN")
-            .build();
+				.authorizeHttpRequests(auth -> auth.requestMatchers("/actuator/health", "/error").permitAll()
+						.requestMatchers("/api/**").authenticated() // protect your controllers
+						.anyRequest().permitAll())
 
-        return new InMemoryUserDetailsManager(user, admin);
-    }
+				.authenticationProvider(authenticationProvider()).httpBasic(basic -> {
+				}); // default Basic auth
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+		return http.build();
+	}
 }
+
+
+
+
+

@@ -1,7 +1,5 @@
 package com.conguyetduong.securitynote.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -29,7 +27,6 @@ public class Note {
 	private String content;
 
 	// Required fields
-	@Column(nullable = false)
 	@NotNull(message = "Owner is required")
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "user_id", nullable = false)

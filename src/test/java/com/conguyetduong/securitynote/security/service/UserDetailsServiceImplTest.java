@@ -34,7 +34,7 @@ class UserDetailsServiceImplTest {
 	@BeforeEach
 	void setUp() {
 		role = roleRepo.save(new Role(AppRole.ROLE_USER));
-		user = userRepo.save(new User("username", "email", "password", role));
+		user = userRepo.save(new User("username", "email@gmail.com", "password", role));
 	}
 
 	@Test

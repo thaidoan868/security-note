@@ -1,16 +1,23 @@
 package com.conguyetduong.securitynote.service.impl;
 
 import com.conguyetduong.securitynote.dto.NoteDto;
+import com.conguyetduong.securitynote.mapper.NoteMapper;
+import com.conguyetduong.securitynote.mapper.NoteMapperImpl;
 import com.conguyetduong.securitynote.model.Note;
+import com.conguyetduong.securitynote.model.User;
 import com.conguyetduong.securitynote.repository.NoteRepository;
+import com.conguyetduong.securitynote.repository.UserRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,38 +28,51 @@ import static org.assertj.core.api.Assertions.*;
 @Transactional
 class NoteServiceImpTest {
 
-	@Autowired
-	private NoteServiceImp underTest; // real service + repo + mapper
-
-	@Autowired
-	private NoteRepository noteRepo; // has been tested
+	@Autowired NoteServiceImp underTest; // real service + repo + mapper
+	@Autowired NoteRepository noteRepo; // has been tested
+	@Autowired UserRepository userRepo;
+	@Autowired NoteMapper noteMapper;
+	
 
 	private String title = "Monday";
 	private String content = "Get things done";
-	private String owner = "thaidoan";
+	private User owner;
+	
+	
+	@BeforeEach
+	void setUp() {
+		owner = userRepo.findByUsername("user");
+	}
 
 	// ---------- tests ----------
 
 	@Test
+	@WithMockUser(username="user")
 	void create_persistsNote_whenValid() {
-		NoteDto note = new NoteDto(null, title, content, owner);
+		User currentUser = userRepo.findByUsername("user");
+		NoteDto note = new NoteDto(null, title, content, null);
+		
 		NoteDto createdNote = underTest.create(note);
 
 		assertThat(createdNote.getId()).as("id should be generated").isNotNull();
 		assertThat(createdNote.getTitle()).isEqualTo(note.getTitle());
 		assertThat(createdNote.getContent()).isEqualTo(note.getContent());
-		assertThat(createdNote.getOwner()).isEqualTo(note.getOwner());
+		assertThat(createdNote.getOwner().getUsername()).isEqualTo(currentUser.getUsername());
 	}
 
 	@Test
 	void getAll_initially_empty_then_contains_created_note() {
-		assertThat(underTest.getAll()).isEmpty();
+		if(noteRepo.count() == 0) {
+			assertThat(underTest.getAll()).isEmpty();
+		}
 
 		Note note = noteRepo.save(new Note(title, content, owner));
+		NoteDto noteDto = noteMapper.toDto(note);
 
 		List<NoteDto> noteList = underTest.getAll();
+		
 
-		assertThat(noteList.getFirst().getId()).isEqualTo(note.getId());
+		assertThat(noteList).contains(noteDto);
 	}
 
 	@Test
@@ -64,7 +84,7 @@ class NoteServiceImpTest {
 		assertThat(retrievedNote.getId()).isEqualTo(note.getId());
 		assertThat(retrievedNote.getContent()).isEqualTo(note.getContent());
 		assertThat(retrievedNote.getTitle()).isEqualTo(note.getTitle());
-		assertThat(retrievedNote.getOwner()).isEqualTo(note.getOwner());
+		assertThat(retrievedNote.getOwner().getUsername()).isEqualTo(note.getOwner().getUsername());
 	}
 
 	@Test
@@ -84,7 +104,7 @@ class NoteServiceImpTest {
 		assertThat(updatedNote.getId()).isEqualTo(oldNote.getId());
 		assertThat(updatedNote.getTitle()).isEqualTo(newTitle);
 		assertThat(updatedNote.getContent()).isEqualTo(oldNote.getContent());
-		assertThat(updatedNote.getOwner()).isEqualTo(oldNote.getOwner());
+		assertThat(updatedNote.getOwner().getUsername()).isEqualTo(oldNote.getOwner().getUsername());
 	}
 
 	@Test

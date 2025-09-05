@@ -23,8 +23,8 @@ public class NoteController {
 	} */
 
 	@PostMapping
-	public ResponseEntity<NoteDto> create(@RequestBody NoteDto noteDto) {
-		return ResponseEntity.ok(noteService.create(noteDto));
+	public ResponseEntity<NoteDto> create(@RequestBody NoteDto NoteDto) {
+		return ResponseEntity.ok(noteService.create(NoteDto));
 	}
 	
 	@GetMapping
@@ -38,8 +38,8 @@ public class NoteController {
 	}
 	
 	@PatchMapping("/{id}")
-    public ResponseEntity<NoteDto> update(@PathVariable Long id, @RequestBody NoteDto noteDto) {
-        return ResponseEntity.ok(noteService.update(id, noteDto));
+    public ResponseEntity<NoteDto> update(@PathVariable Long id, @RequestBody NoteDto NoteDto) {
+        return ResponseEntity.ok(noteService.update(id, NoteDto));
     }
 
     @DeleteMapping("/{id}")

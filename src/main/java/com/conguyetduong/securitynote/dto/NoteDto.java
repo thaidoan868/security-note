@@ -12,5 +12,5 @@ public class NoteDto {
 	private Long id;
 	private String title;
 	private String content;
-	private User owner;
+	private PublicUserDto owner;
 }

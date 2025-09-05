@@ -107,8 +107,8 @@ public class User {
     
     // ---------- Constructor --------------
     @Builder
-    public User(String userName, String email, String password, Role role) {
-        this.username = userName;
+    public User(String username, String email, String password, Role role) {
+        this.username = username;
         this.email = email;
         this.password = password;
         this.role = role;
