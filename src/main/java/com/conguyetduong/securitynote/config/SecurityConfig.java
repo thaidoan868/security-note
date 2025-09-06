@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.conguyetduong.securitynote.model.AppRole;
 import com.conguyetduong.securitynote.security.service.UserDetailsServiceImpl;
 
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class SecurityConfig {
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		// return new BCryptPasswordEncoder(); // store BCrypt hashes in DB
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
 	}
 
@@ -49,8 +50,9 @@ public class SecurityConfig {
 				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
 				.authorizeHttpRequests(auth -> auth.requestMatchers("/actuator/health", "/error").permitAll()
-						.requestMatchers("/api/**").authenticated() // protect your controllers
-						.anyRequest().permitAll())
+				.requestMatchers("/api/**").authenticated()
+				.requestMatchers("/api/admin/**").hasRole("ADMIN")
+				.anyRequest().permitAll())
 
 				.authenticationProvider(authenticationProvider()).httpBasic(basic -> {
 				}); // default Basic auth
@@ -58,8 +60,3 @@ public class SecurityConfig {
 		return http.build();
 	}
 }
-
-
-
-
-

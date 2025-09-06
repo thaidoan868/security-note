@@ -2,6 +2,7 @@ package com.conguyetduong.securitynote.service.impl;
 
 import java.util.*;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,8 @@ import lombok.*;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true) // all methods are read-only by default
+@PreAuthorize("isAuthenticated()")
+//@PreAuthorize("hasAnyRole('USER','ADMIN')")
 public class NoteServiceImp implements NoteService {
     private final NoteRepository noteRepository;
     private final NoteMapper noteMapper;
@@ -28,10 +31,18 @@ public class NoteServiceImp implements NoteService {
 
     public User getCurrentUser() {
         UserDetails authUser = SecurityUtils.getCurrentUser();
-        if (authUser == null) throw new IllegalStateException("No authenticated user");
-        return Optional.ofNullable(userRepository.findByUsername(authUser.getUsername()))
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return userRepository.findByUsername(authUser.getUsername());
     }
+    
+    private String getCurrentUsername() {
+		UserDetails authUser = SecurityUtils.getCurrentUser();
+		return authUser.getUsername();
+	}
+    
+    private Note getNoteIfOwner(Long id) {
+		return noteRepository.findByIdAndOwner_Username(id, getCurrentUsername())
+				.orElseThrow(() -> new EntityNotFoundException("Note not found: " + id));
+	}
     
     @Override
     @Transactional // write tx
@@ -43,21 +54,19 @@ public class NoteServiceImp implements NoteService {
 
     @Override
     public List<NoteDto> getAll() {
-        return noteRepository.findAll().stream().map(noteMapper::toDto).toList();
+        return noteRepository.findAllByOwner_Username(getCurrentUsername()).stream().map(noteMapper::toDto).toList();
     }
 
     @Override
     public NoteDto getById(Long id) {
-        Note note = noteRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Note not found: " + id));
+        Note note = getNoteIfOwner(id);
         return noteMapper.toDto(note);
     }
 
     @Override
     @Transactional // write tx (find + mutate + save as one unit)
     public NoteDto update(Long id, NoteDto NoteDto) {
-        Note note = noteRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Note not found"));
+        Note note = getNoteIfOwner(id);
         noteMapper.updateFromDto(NoteDto, note);
         
         return noteMapper.toDto(noteRepository.save(note));
@@ -66,8 +75,7 @@ public class NoteServiceImp implements NoteService {
     @Override
     @Transactional // write tx
     public void delete(Long id) {
-        Note note = noteRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Note not found: " + id));
+        Note note = getNoteIfOwner(id);
         noteRepository.delete(note);
     }
 }

@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
+@WithMockUser(username="user")
 class NoteServiceImpTest {
 
 	@Autowired NoteServiceImp underTest; // real service + repo + mapper
@@ -47,7 +48,6 @@ class NoteServiceImpTest {
 	// ---------- tests ----------
 
 	@Test
-	@WithMockUser(username="user")
 	void create_persistsNote_whenValid() {
 		User currentUser = userRepo.findByUsername("user");
 		NoteDto note = new NoteDto(null, title, content, null);
@@ -67,12 +67,23 @@ class NoteServiceImpTest {
 		}
 
 		Note note = noteRepo.save(new Note(title, content, owner));
-		NoteDto noteDto = noteMapper.toDto(note);
 
 		List<NoteDto> noteList = underTest.getAll();
 		
 
-		assertThat(noteList).contains(noteDto);
+		assertThat(noteList).contains(noteMapper.toDto(note));
+	}
+	@Test
+	void getAll_returnsOwnerNotes() {
+		User otherUser = userRepo.findByUsername("user1");
+		System.out.println("Other user: " + otherUser);
+		Note ownerNote = noteRepo.save(new Note(title, content, owner));
+		Note otherNote = noteRepo.save(new Note("Tuesday", "Meeting at 10am", otherUser));
+
+		List<NoteDto> noteList = underTest.getAll();
+
+		assertThat(noteList).contains(noteMapper.toDto(ownerNote));
+		assertThat(noteList).doesNotContain(noteMapper.toDto(otherNote));
 	}
 
 	@Test
@@ -85,6 +96,15 @@ class NoteServiceImpTest {
 		assertThat(retrievedNote.getContent()).isEqualTo(note.getContent());
 		assertThat(retrievedNote.getTitle()).isEqualTo(note.getTitle());
 		assertThat(retrievedNote.getOwner().getUsername()).isEqualTo(note.getOwner().getUsername());
+	}
+	
+	@Test
+	void getById_throws_when_not_owner() {
+		User otherUser = userRepo.findByUsername("user1");
+		Note otherNote = noteRepo.save(new Note("Tuesday", "Meeting at 10am", otherUser));
+
+		assertThatThrownBy(() -> underTest.getById(otherNote.getId())).isInstanceOf(EntityNotFoundException.class)
+				.hasMessageContaining(otherNote.getId().toString());
 	}
 
 	@Test

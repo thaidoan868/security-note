@@ -33,6 +33,11 @@ public class DataSeeder {
 						.role(userRole).build();
 				userRepository.save(user);
 			}
+			if (userRepository.findByUsername("user1") == null) {
+				User user1 = User.builder().username("user1").email("user1@example.com").password("{noop}password123")
+						.role(userRole).build();
+				userRepository.save(user1);
+			}
 
 			// --- Seed default ADMIN ---
 			if (userRepository.findByUsername("admin") == null) {
